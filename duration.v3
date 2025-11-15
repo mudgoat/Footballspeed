@@ -1,0 +1,26 @@
+import machine
+import time
+import tm1637
+from machine import Pin
+
+adc_start = machine.ADC(0)
+adc_stop = machine.ADC(1)
+tm = tm1637.TM1637(clk=Pin(0), dio=Pin(1))
+time_start = 0
+is_start = False
+
+while True:
+    start_value = adc_start.read_u16()
+    if start_value < 58000:
+        time_start = time.ticks_ms()
+        is_start = True
+    end_value = adc_stop.read_u16()
+    if end_value < 58000 and is_start == True:
+        time_stop = time.ticks_ms()
+        time_duration = time.ticks_diff(time_stop,time_start)
+        hours = (time_duration/1000)/3600
+        distance = 0.1
+        speed = distance/hours
+        tm.show(str(int(speed)), colon = False)
+        time.sleep(0.2)
+        is_start = False
